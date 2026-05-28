@@ -17,7 +17,7 @@ AI 智能点歌电台 —— 像私人 DJ 一样懂你的听歌品味。
 |---|---|
 | 后端 | Fastify + WebSocket |
 | 前端 | React + Vite |
-| AI | DeepSeek / Claude |
+| AI | DeepSeek |
 | 存储 | SQLite (better-sqlite3) |
 | 桌面 | Electron |
 | 音乐源 | 网易云音乐 (NCM 解锁代理) |
@@ -44,7 +44,7 @@ npm start
 
 首次启动后在 Web 界面 `设置` 页面配置：
 
-- AI API Key（DeepSeek 或 Claude）
+- AI API Key（DeepSeek）
 - 网易云 Cookie（可选，用于读取歌单）
 - 天气 API Key（可选，OpenWeatherMap）
 
