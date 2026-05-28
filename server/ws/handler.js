@@ -121,8 +121,8 @@ async function handleChatSend(socket, content) {
       await handleToolCalls(socket, result.toolCalls);
     } else if (intentResult.intent === 'music_request') {
       // AI 没调工具，自动从"我喜欢"推荐
-      const songs = await recommendFromLiked({}, 6);
-      if (songs.length > 0) {
+      const { songs } = await recommendFromLiked({}, 6);
+      if (songs && songs.length > 0) {
         markAsRecommended(songs.map(s => s.id));
         socket.send(JSON.stringify({
           type: 'music.recommend',

@@ -43,7 +43,9 @@ export default async function settingsRoutes(fastify) {
     // 网易云配置变化时清除缓存和推荐历史
     if (partial.netease) {
       clearLikedCache();
+      const before = recommendedHistory.size;
       recommendedHistory.clear();
+      console.log(`[settings] Cleared recommendation history (was ${before} songs)`);
     }
 
     // 调度配置变化时重启
