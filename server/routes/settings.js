@@ -32,6 +32,7 @@ export default async function settingsRoutes(fastify) {
 
   fastify.put('/api/settings', async (request) => {
     const partial = request.body;
+    console.log('[settings] PUT received, keys:', Object.keys(partial || {}));
 
     // 脱敏值或空字符串 = 不更新（保留原有值）
     if (partial.ai && (!partial.ai.apiKey || partial.ai.apiKey === '******')) delete partial.ai.apiKey;
