@@ -7,8 +7,8 @@ AI 智能点歌电台 —— 像私人 DJ 一样懂你的听歌品味。
 - **AI 自然语言点歌** — 告诉它你的心情，它会帮你选歌
 - **天气联动推荐** — 雨天自动放慵懒爵士，晴天切轻快流行
 - **网易云音乐集成** — 绑定账号，读取歌单、搜索歌曲
-- **智能播报** — TTS 语音播报天气、歌曲信息，DJ 模式
-- **定时任务** — 早安问候、自动续播、天气提醒
+- **智能播报** — TTS 语音播报，AI 生成早安问候、天气变化提醒
+- **定时任务** — 每日早安推荐、静默互动提醒、天气联动播报（AI 驱动）
 - **PWA + Electron** — 手机电脑都能用，也可打包桌面端
 
 ## 技术栈
@@ -18,23 +18,21 @@ AI 智能点歌电台 —— 像私人 DJ 一样懂你的听歌品味。
 | 后端 | Fastify + WebSocket |
 | 前端 | React + Vite |
 | AI | DeepSeek |
-| 存储 | SQLite (better-sqlite3) |
+| 存储 | SQLite (sql.js WASM) |
 | 桌面 | Electron |
 | 音乐源 | 网易云音乐 (NCM 解锁代理) |
 
 ## 快速开始
 
 ```bash
+# 克隆项目
+git clone https://github.com/Hao-y318/Deepudio.git
+cd Deepudio
+
 # 安装依赖
 npm install
 
-# 开发模式（前后端同时启动）
-npm run dev
-
-# 仅启动后端
-npm run server
-
-# 生产模式（先构建前端再启动）
+# 启动（自动构建前端 + 启动后端，首次运行自动创建 data/ 目录）
 npm start
 ```
 
