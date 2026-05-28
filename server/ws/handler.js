@@ -189,6 +189,20 @@ async function handleToolCalls(socket, toolCalls) {
           const fresh = matched.filter(s => !recommendedHistory.has(s.id));
           const stale = matched.filter(s => recommendedHistory.has(s.id));
 
+          // 新鲜的不够，不再用重复凑数，只返回剩余的
+          if (fresh.length < limit && fresh.length > 0) {
+            const songs = shuffle([...fresh]).slice(0, limit);
+            markAsRecommended(songs.map(s => s.id));
+            let reason = `"${getLikedPlaylistName()}" — "${query}"（仅剩${fresh.length}首未听过）`;
+            socket.send(JSON.stringify({
+              type: 'music.recommend',
+              payload: { songs, reason },
+              timestamp: Date.now()
+            }));
+            result = { songs, found: true };
+            break;
+          }
+
           // 全部推荐过了，不再返回重复
           if (fresh.length === 0 && stale.length > 0 && matched.length > 0) {
             socket.send(JSON.stringify({
