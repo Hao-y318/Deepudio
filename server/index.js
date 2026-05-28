@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 import { loadConfig, DATA_DIR } from './config.js';
+import { mkdirSync, existsSync } from 'fs';
 import { initDB } from './store/userStore.js';
 import { registerWebSocket, broadcastToAll } from './ws/handler.js';
 import { setEventHandler, startScheduler } from './modules/scheduler.js';
@@ -58,6 +59,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function start() {
   const config = loadConfig();
+
+  // 确保数据目录存在
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
   // 初始化数据库
   await initDB();
