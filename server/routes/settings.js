@@ -4,6 +4,7 @@ import { loadConfig, updateConfig, saveConfig } from '../config.js';
 import { stopScheduler, startScheduler } from '../modules/scheduler.js';
 import { stopWeatherPolling, startWeatherPolling } from '../services/weather.js';
 import { clearLikedCache } from '../services/netease.js';
+import { recommendedHistory } from '../modules/musicEngine.js';
 
 export default async function settingsRoutes(fastify) {
   fastify.get('/api/settings', async () => {
@@ -39,9 +40,10 @@ export default async function settingsRoutes(fastify) {
 
     const updated = updateConfig(partial);
 
-    // 只在 Cookie 变化时清除缓存
-    if (partial.netease?.cookie) {
+    // 网易云配置变化时清除缓存和推荐历史
+    if (partial.netease) {
       clearLikedCache();
+      recommendedHistory.clear();
     }
 
     // 调度配置变化时重启
