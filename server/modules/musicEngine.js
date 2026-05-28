@@ -99,12 +99,19 @@ function filterByGenre(pool, genre) {
 export async function recommendFromLiked(params, limit = 5) {
   try {
     const likedSongs = await getAllPlaylistSongs(800);
-    if (likedSongs.length === 0) return [];
+    if (likedSongs.length === 0) return { songs: [], exhausted: false };
 
     let pool = likedSongs.filter(s => !recommendedHistory.has(s.id));
+    let exhausted = false;
 
-    // 未推荐过的歌太少，不过滤去重，但不全局清空历史
+    // 未推荐过的歌太少，尝试放宽条件
     if (pool.length < limit) {
+      // 如果整个歌单都推完了，标记为枯竭
+      if (recommendedHistory.size >= likedSongs.length) {
+        exhausted = true;
+        return { songs: [], exhausted: true };
+      }
+      // 否则不过滤去重
       pool = likedSongs;
     }
 
@@ -149,9 +156,9 @@ export async function recommendFromLiked(params, limit = 5) {
 
     scored.sort((a, b) => b.score - a.score);
 
-    return scored.slice(0, limit).map(s => s.song);
+    return { songs: scored.slice(0, limit).map(s => s.song), exhausted: false };
   } catch {
-    return [];
+    return { songs: [], exhausted: false };
   }
 }
 

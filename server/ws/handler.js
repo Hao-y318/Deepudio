@@ -189,7 +189,21 @@ async function handleToolCalls(socket, toolCalls) {
           const fresh = matched.filter(s => !recommendedHistory.has(s.id));
           const stale = matched.filter(s => recommendedHistory.has(s.id));
 
-          // Fisher-Yates 分别洗牌
+          // 全部推荐过了，不再返回重复
+          if (fresh.length === 0 && stale.length > 0 && matched.length > 0) {
+            socket.send(JSON.stringify({
+              type: 'chat.stream',
+              payload: { content: `"${getLikedPlaylistName()}"里和"${query}"相关的歌都推过了，换个歌单试试？`, done: false },
+              timestamp: Date.now()
+            }));
+            socket.send(JSON.stringify({
+              type: 'chat.stream',
+              payload: { content: '', done: true },
+              timestamp: Date.now()
+            }));
+            break;
+          }
+
           const shuffle = (arr) => {
             for (let i = arr.length - 1; i > 0; i--) {
               const j = Math.floor(Math.random() * (i + 1));
@@ -197,7 +211,6 @@ async function handleToolCalls(socket, toolCalls) {
             }
             return arr;
           };
-
           const pool = [...shuffle(fresh), ...shuffle(stale)];
 
           const songs = pool.slice(0, limit);
@@ -236,8 +249,22 @@ async function handleToolCalls(socket, toolCalls) {
         }
 
         case 'recommend_songs': {
-          let songs = await recommendFromLiked(toolCall.input, 10);
+          let { songs, exhausted } = await recommendFromLiked(toolCall.input, 10);
           let reason = buildRecommendReason(toolCall.input) + ` · "${getLikedPlaylistName()}"`;
+
+          if (exhausted) {
+            socket.send(JSON.stringify({
+              type: 'chat.stream',
+              payload: { content: `"${getLikedPlaylistName()}"里的歌都推过一遍了，换个歌单或者换个口味试试？`, done: false },
+              timestamp: Date.now()
+            }));
+            socket.send(JSON.stringify({
+              type: 'chat.stream',
+              payload: { content: '', done: true },
+              timestamp: Date.now()
+            }));
+            break;
+          }
 
           // 风格/语言过滤后无结果 → 回退到普通推荐
           if (songs.length === 0 && (toolCall.input.genre || toolCall.input.language)) {
