@@ -71,12 +71,7 @@ export function loadConfig() {
   if (existsSync(CONFIG_PATH)) {
     try {
       const userConfig = JSON.parse(readFileSync(CONFIG_PATH, 'utf-8'));
-      const merged = deepMerge(DEFAULT_CONFIG, userConfig);
-      // 兼容老版本 claude 字段
-      if (userConfig.claude && !userConfig.ai) {
-        merged.ai.apiKey = userConfig.claude.apiKey || '';
-      }
-      return merged;
+      return deepMerge(DEFAULT_CONFIG, userConfig);
     } catch { /* corrupt config, use default */ }
   }
   return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -88,11 +83,6 @@ export function saveConfig(config) {
 
 export function updateConfig(partial) {
   const current = loadConfig();
-  // 兼容老版本 claude 字段映射到 ai
-  if (partial.claude) {
-    partial.ai = { ...partial.ai, ...partial.claude };
-    delete partial.claude;
-  }
   const merged = deepMerge(current, partial);
   saveConfig(merged);
   return merged;
