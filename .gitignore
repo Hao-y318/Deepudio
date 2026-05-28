@@ -4,3 +4,5 @@ data/
 *.db
 *.log
 .env
+"*.lnk"  
+"test.mp3"  
