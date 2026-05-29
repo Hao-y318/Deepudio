@@ -167,16 +167,20 @@ export async function getAllPlaylistSongs(limit = 500) {
   const songs = [];
   const seen = new Set();
 
+  // 额外歌单保留至少 40% 配额
+  const config = loadConfig();
+  const extraIds = config.netease.extraPlaylistIds || [];
+  const hasExtra = extraIds.length > 0;
+  const likedQuota = hasExtra ? Math.floor(limit * 0.6) : limit;
+
   // 先加"我喜欢"
   const likedId = await getLikedPlaylistId();
   if (likedId) {
-    const liked = await getPlaylistDetail(likedId, Math.min(limit, 2000));
+    const liked = await getPlaylistDetail(likedId, Math.min(likedQuota, 2000));
     for (const s of liked) { if (!seen.has(s.id)) { seen.add(s.id); songs.push(s); } }
   }
 
   // 再加用户选择的额外歌单
-  const config = loadConfig();
-  const extraIds = config.netease.extraPlaylistIds || [];
   for (const pid of extraIds) {
     if (songs.length >= limit) break;
     const tracks = await getPlaylistDetail(pid, Math.min(limit - songs.length, 200));
