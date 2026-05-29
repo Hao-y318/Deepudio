@@ -118,15 +118,15 @@ export async function getUserPlaylists() {
   return data?.playlist || [];
 }
 
-// 歌单详情（分页拉取全部歌曲）
+// 歌单详情（分页拉取，最多 3000 首）
 export async function getPlaylistAllTracks(playlistId) {
   const allTracks = [];
   const seen = new Set();
   const pageSize = 500;
+  const maxTracks = 3000;
   let offset = 0;
-  let hasMore = true;
 
-  while (hasMore) {
+  while (allTracks.length < maxTracks) {
     const data = await apiGet('/playlist/track/all', {
       id: String(playlistId),
       limit: String(pageSize),
@@ -145,7 +145,7 @@ export async function getPlaylistAllTracks(playlistId) {
     }
 
     offset += pageSize;
-    if (tracks.length < pageSize) hasMore = false;
+    if (tracks.length < pageSize) break;
   }
 
   return allTracks;
@@ -201,15 +201,18 @@ export async function getAllPlaylistSongs() {
   const seen = new Set();
 
   const likedId = await getLikedPlaylistId();
+  const config = loadConfig();
+  const extraIds = config.netease.extraPlaylistIds || [];
+  const totalPlaylists = (likedId ? 1 : 0) + extraIds.length;
+  const perList = Math.max(Math.floor(2000 / Math.max(totalPlaylists, 1)), 200);
+
   if (likedId) {
-    const liked = await getPlaylistAllTracks(likedId);
+    const liked = await getPlaylistDetail(likedId, perList);
     for (const s of liked) { if (!seen.has(s.id)) { seen.add(s.id); songs.push(s); } }
   }
 
-  const config = loadConfig();
-  const extraIds = config.netease.extraPlaylistIds || [];
   for (const pid of extraIds) {
-    const tracks = await getPlaylistAllTracks(pid);
+    const tracks = await getPlaylistDetail(pid, perList);
     for (const s of tracks) { if (!seen.has(s.id)) { seen.add(s.id); songs.push(s); } }
   }
 
