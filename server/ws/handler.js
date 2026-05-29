@@ -189,6 +189,14 @@ async function handleToolCalls(socket, toolCalls) {
           const fresh = matched.filter(s => !recommendedHistory.has(s.id));
           const stale = matched.filter(s => recommendedHistory.has(s.id));
 
+          const shuffle = (arr) => {
+            for (let i = arr.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+          };
+
           // 新鲜的不够，不再用重复凑数，只返回剩余的
           if (fresh.length < limit && fresh.length > 0) {
             const songs = shuffle([...fresh]).slice(0, limit);
@@ -218,13 +226,6 @@ async function handleToolCalls(socket, toolCalls) {
             break;
           }
 
-          const shuffle = (arr) => {
-            for (let i = arr.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-          };
           const pool = [...shuffle(fresh), ...shuffle(stale)];
 
           const songs = pool.slice(0, limit);
