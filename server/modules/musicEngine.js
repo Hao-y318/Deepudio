@@ -98,7 +98,7 @@ function filterByGenre(pool, genre) {
 
 export async function recommendFromLiked(params, limit = 5) {
   try {
-    const likedSongs = await getAllPlaylistSongs(2000);
+    const likedSongs = await getAllPlaylistSongs();
     if (likedSongs.length === 0) return { songs: [], exhausted: false };
 
     let pool = likedSongs.filter(s => !recommendedHistory.has(s.id));

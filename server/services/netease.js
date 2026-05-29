@@ -118,7 +118,40 @@ export async function getUserPlaylists() {
   return data?.playlist || [];
 }
 
-// 歌单详情
+// 歌单详情（分页拉取全部歌曲）
+export async function getPlaylistAllTracks(playlistId) {
+  const allTracks = [];
+  const seen = new Set();
+  const pageSize = 500;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const data = await apiGet('/playlist/track/all', {
+      id: String(playlistId),
+      limit: String(pageSize),
+      offset: String(offset)
+    });
+
+    const tracks = data?.songs || data?.playlist?.tracks || [];
+    if (tracks.length === 0) break;
+
+    for (const t of tracks) {
+      const song = formatTrack(t);
+      if (!seen.has(song.id)) {
+        seen.add(song.id);
+        allTracks.push(song);
+      }
+    }
+
+    offset += pageSize;
+    if (tracks.length < pageSize) hasMore = false;
+  }
+
+  return allTracks;
+}
+
+// 歌单详情（带上限，兼容旧逻辑）
 export async function getPlaylistDetail(playlistId, limit = 100) {
   const data = await apiGet('/playlist/detail', { id: String(playlistId), n: String(Math.min(limit, 1000)) });
   if (!data?.playlist?.tracks) return [];
@@ -163,33 +196,26 @@ export async function getLikedPlaylistId() {
 }
 
 // 获取所有已选择的歌单的歌曲（"我喜欢" + 用户选的额外歌单）
-export async function getAllPlaylistSongs(limit = 2000) {
+export async function getAllPlaylistSongs() {
   const songs = [];
   const seen = new Set();
 
-  // 额外歌单保留至少 40% 配额
-  const config = loadConfig();
-  const extraIds = config.netease.extraPlaylistIds || [];
-  const hasExtra = extraIds.length > 0;
-  const likedQuota = hasExtra ? Math.floor(limit * 0.6) : limit;
-
-  // 先加"我喜欢"
   const likedId = await getLikedPlaylistId();
   if (likedId) {
-    const liked = await getPlaylistDetail(likedId, Math.min(likedQuota, 2000));
+    const liked = await getPlaylistAllTracks(likedId);
     for (const s of liked) { if (!seen.has(s.id)) { seen.add(s.id); songs.push(s); } }
   }
 
-  // 再加用户选择的额外歌单
+  const config = loadConfig();
+  const extraIds = config.netease.extraPlaylistIds || [];
   for (const pid of extraIds) {
-    if (songs.length >= limit) break;
-    const tracks = await getPlaylistDetail(pid, Math.min(limit - songs.length, 200));
+    const tracks = await getPlaylistAllTracks(pid);
     for (const s of tracks) { if (!seen.has(s.id)) { seen.add(s.id); songs.push(s); } }
   }
 
   return songs;
 }
 
-export async function getLikedSongs(limit = 2000) {
-  return await getAllPlaylistSongs(limit);
+export async function getLikedSongs() {
+  return await getAllPlaylistSongs();
 }
