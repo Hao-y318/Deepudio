@@ -163,7 +163,7 @@ export async function getLikedPlaylistId() {
 }
 
 // 获取所有已选择的歌单的歌曲（"我喜欢" + 用户选的额外歌单）
-export async function getAllPlaylistSongs(limit = 500) {
+export async function getAllPlaylistSongs(limit = 2000) {
   const songs = [];
   const seen = new Set();
 

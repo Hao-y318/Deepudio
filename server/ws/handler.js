@@ -179,7 +179,7 @@ async function handleToolCalls(socket, toolCalls) {
       switch (toolCall.name) {
         case 'search_songs': {
           const query = (toolCall.input.query || '').toLowerCase();
-          const likedSongs = await getLikedSongs(1000);
+          const likedSongs = await getLikedSongs(2000);
           const limit = toolCall.input.limit || 10;
 
           const matched = likedSongs
