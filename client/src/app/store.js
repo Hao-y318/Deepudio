@@ -45,7 +45,10 @@ export function addMessage(role, content, metadata = {}) {
 }
 
 export function addToQueue(song) {
-  queue.value = [...queue.value, song];
+  const exists = queue.value.some(s => s.id === song.id);
+  if (!exists) {
+    queue.value = [...queue.value, song];
+  }
 }
 
 export function removeFromQueue(index) {
